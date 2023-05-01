@@ -83,13 +83,30 @@ class DBStorage:
 
     def get(self, cls, id):
         """ Retrieves an object from the database based on its class and ID"""
-        objs = self.__session.query(cls).filter_by(id=id).all()
-        return objs[0] if objs else None
+        try:
+            obj_dict = {}
+            if cls:
+                obj_class = self.__session.query(self.classes.get(cls)).all()
+                for item in obj_class:
+                    obj_dict[item.id] = item
+            return obj_dict[id]
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
 
     def count(self, cls=None):
         """Counts the number of objects in storage"""
+        bj_dict = {}
         if cls:
-            return self.__session.query(cls).count()
+            obj_class = self.__session.query(self.classes.get(cls)).all()
+            for item in obj_class:
+                obj_dict[item.id] = item
+            return len(obj_dict)
         else:
-            return sum(self.__session.query(cls).count()
-                       for cls in self.__classes)
+            for cls_name in self.classes:
+                if cls_name == 'BaseModel':
+                    continue
+                obj_class = self.__session.query(self.classes.
+                                                 get(cls_name)).all()
+                for item in obj_class:
+                    obj_dict[item.id] = item
+            return len(obj_dict)
