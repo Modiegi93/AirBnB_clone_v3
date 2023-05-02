@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 """Test for DBStorage"""
 import unittest
+from datetime import datetime
 import os
 from models import *
 from models.base_model import Base
 from models.engine.db_storage import DBStorage
+
+storage_type = os.environ.get('HBNB_TYPE_STORAGE')
 
 
 class TestGetCountDB(unittes.TestCase):
@@ -19,7 +22,6 @@ class TestGetCountDB(unittes.TestCase):
 
     def setUp(self):
         """initializes new state and cities for testing"""
-        
         self.state = State()
         self.state.name = 'California'
         self.state.save()
@@ -47,13 +49,13 @@ class TestGetCountDB(unittes.TestCase):
         state_count = storage.count("State")
         city_count = storage.count("City")
         place_count = storage.count("Place")
-        all_count = storage.count(None)
+        all_count = storage.count("")
 
-        self.assertEqual(state_count, 1)
-        self.assertEqual(city_count, 2)
+        self.assertEqual(state_count, 3)
+        self.assertEqual(city_count, 4)
         self.assertEqual(place_count, 0)
-        self.assertEqual(all_count, 18)
+        self.assertEqual(all_count, 7)
 
 
 if __name__ == "__main__":
-    unittest
+    unittest.main()

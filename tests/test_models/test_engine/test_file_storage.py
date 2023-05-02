@@ -17,13 +17,14 @@ BaseModel = models.base_model.BaseModel
 FileStorage = engine.file_storage.FileStorage
 storage = models.storage
 
+
 @unittest.SkipIf(storage_type == db, 'skip if environ is not db')
 class TestGetCountFS(unittest.TestCase):
     """test get and count methods"""
     def setUpClass(cls):
         print('\n\n.................................')
         print('...... Testing Get and Count ......')
-        print('.......... FS Methods ..........')
+        print('.......... FileStorage ..........')
         print('.................................\n\n')
 
     def setUp(self):
@@ -43,26 +44,28 @@ class TestGetCountFS(unittest.TestCase):
         self.city2.state_id = self.state.id
         self.city2.save()
 
-
-
     def test_get(self):
         """Test if get method returns state"""
         real_state = storage.get("State", self.state.id)
         fake_state = storage.get("State", "12345")
+        no_state = storage.get("", "")
 
-        self.assertEqual(real_state), self.state)
+        self.assertEqual(real_state, self.state)
         self.assertNotEqual(fake_state, self.state)
+        self.assertIsNone(no_state)
 
     def test_count(self):
         """Test if count method returns correct numbers"""
         state_count = storage.count("State")
         city_count = storage.count("City")
         place_count = storage.count("Place")
+        all_count = storage.count(None)
 
         self.assertEqual(state_count, 1)
         self.assertEqual(city_count, 2)
         self.assertEqual(place_count, 0)
+        self.assertEqual(all_count, 18)
 
 
 if __name__ == "__main__":
-    unittest
+    unittest.main()
