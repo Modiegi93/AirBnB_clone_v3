@@ -42,20 +42,14 @@ class DBStorage:
 
     def all(self, cls=None):
         """query on the current database session"""
-        obj_dict = {}
-        if cls:
-            obj_class = self.__session.query(self.classes.get(cls)).all()
-            for item in obj_class:
-                obj_dict[item.id] = item
-            return obj_dict
-        for class_name in self.classes:
-            if class_name == 'BaseModel':
-                continue
-            obj_class = self.__session.query(
-                self.classes.get(class_name)).all()
-            for item in obj_class:
-                obj_dict[item.id] = item
-        return obj_dict
+        new_dict = {}
+        for clss in classes:
+            if cls is None or cls is classes[clss] or cls is clss:
+                objs = self.__session.query(classes[clss]).all()
+                for obj in objs:
+                    key = obj.__class__.__name__ + '.' + obj.id
+                    new_dict[key] = obj
+        return (new_dict)
 
     def new(self, obj):
         """add the object to the current database session"""
@@ -83,30 +77,15 @@ class DBStorage:
 
     def get(self, cls, id):
         """ Retrieves an object from the database based on its class and ID"""
-        try:
-            obj_dict = {}
-            if cls:
-                obj_class = self.__session.query(self.classes.get(cls)).all()
-                for item in obj_class:
-                    obj_dict[item.id] = item
-            return obj_dict[id]
-        except sqlalchemy.orm.exc.NoResultFound:
+        if (cls in classes or cls.__name__ in classes) and id is not None:
+            if type(cls) != str:
+                cls = classes[cls.__name__]
+            else:
+                cls = classes[cls]
+            return self.__session.query(cls).filter(cls.id == id).first()
+        else:
             return None
 
     def count(self, cls=None):
         """Counts the number of objects in storage"""
-        bj_dict = {}
-        if cls:
-            obj_class = self.__session.query(self.classes.get(cls)).all()
-            for item in obj_class:
-                obj_dict[item.id] = item
-            return len(obj_dict)
-        else:
-            for cls_name in self.classes:
-                if cls_name == 'BaseModel':
-                    continue
-                obj_class = self.__session.query(self.classes.
-                                                 get(cls_name)).all()
-                for item in obj_class:
-                    obj_dict[item.id] = item
-            return len(obj_dict)
+        return len(self.all(cls))
